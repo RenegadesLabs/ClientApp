@@ -2,6 +2,8 @@ package com.labs.renegades.clientapp;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -38,6 +40,8 @@ public class LoginActivity extends AppCompatActivity {
     private MyAdapter myAdapter;
     static final String TAG = "LoginActivity";
 
+    private DBHelper dbHelper;
+
     // UI references.
     private EditText mUserNameView;
     private EditText mEmailView;
@@ -55,6 +59,8 @@ public class LoginActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.list_view);
         myAdapter = new MyAdapter(this, users);
         listView.setAdapter(myAdapter);
+
+        dbHelper = new DBHelper(this);
 
         // Set up the login form.
         mUserNameView = (EditText) findViewById(R.id.user_name);
@@ -217,6 +223,12 @@ public class LoginActivity extends AppCompatActivity {
                                 public void onResponse(Call<List<Model>> call,
                                                        Response<List<Model>> response1) {
                                     users.addAll(response1.body());
+
+                                    // Adding users to database.
+                                    for (Model user : users) {
+                                        putInDatabase(user);
+                                    }
+
                                     myAdapter.notifyDataSetChanged();
                                 }
 
@@ -271,5 +283,22 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
         }
     }
+
+    private void putInDatabase(Model user) {
+        ContentValues cv = new ContentValues();
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        cv.clear();
+        cv.put("name", user.getUsername());
+        Object o = user.getLastLogin();
+
+        if (o != null) {
+            cv.put("last_login", o.toString());
+        } else {
+            cv.put("last_login", "null");
+        }
+        db.insert("users", null, cv);
+        db.close();
+    }
+
 }
 
