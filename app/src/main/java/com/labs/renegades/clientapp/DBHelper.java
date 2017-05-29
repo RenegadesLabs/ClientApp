@@ -22,7 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("create table users ("
                 + "id integer primary key autoincrement,"
                 + "name text,"
-                + "last_login text," + ");");
+                + "last_login text" + ");");
     }
 
     @Override
